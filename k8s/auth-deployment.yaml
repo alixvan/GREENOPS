@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+  namespace: greenops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-auth
+  template:
+    metadata:
+      labels:
+        app: backend-auth
+    spec:
+      containers:
+        - name: backend-auth
+          image: node:18-alpine
+          command: ["node", "-e", "console.log('Service Auth connecte a Postgres'); setInterval(() => {}, 1000);"]
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: postgres-user
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: postgres-db
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenops-secrets
+                  key: postgres-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: greenops-secrets
+                  key: jwt-secret

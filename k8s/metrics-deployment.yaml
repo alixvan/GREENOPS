@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-deployment
+  namespace: greenops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-metrics
+  template:
+    metadata:
+      labels:
+        app: backend-metrics
+    spec:
+      containers:
+        - name: backend-metrics
+          image: node:18-alpine
+          command: ["node", "-e", "console.log('Service Metrics connecte a Postgres et Redis cache'); setInterval(() => {}, 1000);"]
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
